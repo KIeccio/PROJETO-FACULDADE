@@ -8,6 +8,7 @@ body{
 }
 
 a{
+    color: white;
     text-decoration: none;
 }
 
@@ -15,7 +16,8 @@ a:visited{
     text-decoration: none;
     color: white;
 }
-    
+
+
 .cabecalho{
     background-color: red;
     margin: auto;
