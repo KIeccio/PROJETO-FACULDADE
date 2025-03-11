@@ -7,6 +7,15 @@ body{
 
 }
 
+a{
+    text-decoration: none;
+}
+
+a:visited{
+    text-decoration: none;
+    color: white;
+}
+    
 .cabecalho{
     background-color: red;
     margin: auto;
@@ -31,7 +40,7 @@ body{
 }
 
 .hello{
-    width: 140px;
+    width: 160px;
     height: 25px;
     background-image: url(perfil2white.png);
     background-repeat: no-repeat;
@@ -48,6 +57,10 @@ body{
     left: 1%;
 
     
+}
+
+.hello:hover{
+    cursor: pointer;
 }
 
 .car{
@@ -69,11 +82,16 @@ body{
     
 }
 
+.car:hover{
+    cursor: pointer;
+}
+
 .menu{
     background-color: white;
     width: 900px;
     height: 100px;
     margin: auto;
+    margin-bottom: 10px;
 
     position: relative;
 
@@ -87,7 +105,7 @@ body{
     margin: 0;
     padding: 0;
     background-color: red;
-    width: 200px;
+    width: 280px;
     height: 50px;
 
     border-radius: 20px;
@@ -114,20 +132,136 @@ body{
 
 
 .esfihas{
-    left: 15%;
+    left: 17%;
 }
 
 .refrigerantes{
-    left: 85%;
+    left: 83%;
 }
 
 .container{
     background-color: white;
     margin: auto;
-    margin-top: 10px;
     width: 900px;
-    height: 2000px;
+    height: 1500px;
+
+    position: relative;
+}
+
+.square{
+    width: 880px;
+    height: 500px;
+
+    position: absolute;
+    margin: 10px;
+
+    text-indent: 50px;
+    color: red;
+    font-weight: bold;
+
+}
+
+.seta_pizza{
+    background-image: url(setaPizza.png);
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 28px;
+    height: 28px;
+
+    position: absolute;
+    left: 6px;
+    top: 17px;
+
+
+}
+
+.pizzas_menu{
+    position: absolute;
+    /* border: 1px solid red; */
+    top: 0px;
+}
+
+
+.esfihas_menu{
+    position: absolute;
+    /* border: 1px solid black; */
+    top: 510px;
+}
+
+.refrigerantes_menu{
+    position: absolute;
+    /* border: 1px solid black; */
+    top: 1020px;
+
+}
+
+.itens{
+    /* border: 1px solid black; */
+    width: 850px;
+    height: 420px;
+    margin: auto;
+}
+
+ul{
+    padding: 0;
+    /* border: 1px solid black; */
+    width: 808px;
+    height: 375px;
+    margin: 20px;
+    list-style-type: none;
+    position: absolute;
+
+}
+
+li{
+    margin: 10px;
+    width: 246px;
+    height: 160px;
+    overflow: hidden;
+    float: left;
+    position: relative;
+
+}
+
+.sabor_pizza{
+    margin: 0;
+    padding: 0;
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 80%;
+    height: 80%;
     
+    background-position: center;
+
+    position: absolute;
+
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.nome_sabor{
+    margin: 0;
+    padding: 0;
+    border: 3px solid red;
+    border-radius: 15px;
+    width: 240px;
+    height: 30px;
+
+    font-size: 0.9em;
+    
+    position: absolute;
+    bottom: 0;
+    
+    left: 50%;
+    transform: translate(-50%);
+    align-content: center;
+    text-align: center;
+    text-indent: 0;
+}
+
+.nome_sabor:hover{
+    cursor: pointer;
 }
 
 .footer{
