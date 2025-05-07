@@ -1,42 +1,30 @@
 require('dotenv').config();
 const express = require('express');
-const sql = require('mssql');
+const { sql, poolConnect } = require('./db');
+
 const app = express();
 app.use(express.json());
 
-// Configuração de conexão com o banco de dados usando autenticação do Windows
-const config = {
-  server: process.env.DB_SERVER,
-  database: process.env.DB_DATABASE,
-  options: {
-    encrypt: false,  // Desabilitar criptografia se não necessário
-    trustServerCertificate: true // Desabilitar verificação de certificado SSL
-  },
-  // Usando autenticação do Windows
-  options: {
-    trustedConnection: true,  // Autenticação do Windows
-  }
-};
+const PORT = process.env.PORT || 3000;
 
-// Conectar ao banco de dados uma vez e reutilizar a conexão
-let poolPromise = sql.connect(config);
-
-// Rota de login
+// LOGIN
 app.post('/login', async (req, res) => {
   const { cpf, nome } = req.body;
 
   try {
-    const pool = await poolPromise;
-    const result = await pool.request()
+    await poolConnect;
+    const request = (await sql.connect()).request();
+
+    const result = await request
       .input('cpf', sql.VarChar(11), cpf)
       .query('SELECT * FROM usuarios WHERE cpf = @cpf');
-    
+
     let usuario;
 
     if (result.recordset.length > 0) {
       usuario = result.recordset[0];
     } else {
-      const insert = await pool.request()
+      const insert = await request
         .input('cpf', sql.VarChar(11), cpf)
         .input('nome', sql.VarChar(50), nome)
         .query('INSERT INTO usuarios (cpf, nome) OUTPUT INSERTED.* VALUES (@cpf, @nome)');
@@ -50,11 +38,13 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Rota de produtos
+// PRODUTOS
 app.get('/produtos', async (req, res) => {
   try {
-    const pool = await poolPromise;
-    const result = await pool.request().query('SELECT * FROM produtos');
+    await poolConnect;
+    const result = await (await sql.connect())
+      .request()
+      .query('SELECT * FROM produtos');
     res.status(200).json(result.recordset);
   } catch (err) {
     console.error('Erro ao buscar produtos:', err);
@@ -62,7 +52,7 @@ app.get('/produtos', async (req, res) => {
   }
 });
 
-// Rota para criar pedido
+// CRIAR PEDIDO
 app.post('/pedidos', async (req, res) => {
   const { usuario_id, itens } = req.body;
 
@@ -71,18 +61,17 @@ app.post('/pedidos', async (req, res) => {
   }
 
   try {
-    const pool = await poolPromise;
+    await poolConnect;
+    const request = (await sql.connect()).request();
 
-    // Inserir o pedido
-    const pedido = await pool.request()
+    const pedido = await request
       .input('usuario_id', sql.Int, usuario_id)
       .query('INSERT INTO pedidos (usuario_id) OUTPUT INSERTED.id VALUES (@usuario_id)');
-    
+
     const pedidoId = pedido.recordset[0].id;
 
-    // Inserir os itens do pedido
     for (const item of itens) {
-      await pool.request()
+      await request
         .input('pedido_id', sql.Int, pedidoId)
         .input('produto_id', sql.Int, item.produto_id)
         .input('quantidade', sql.Int, item.quantidade)
@@ -96,8 +85,6 @@ app.post('/pedidos', async (req, res) => {
   }
 });
 
-// Configuração do servidor
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
 });

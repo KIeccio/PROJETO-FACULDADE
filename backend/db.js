@@ -2,20 +2,14 @@ const sql = require('mssql');
 require('dotenv').config();
 
 const config = {
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
   server: process.env.DB_SERVER,
   database: process.env.DB_DATABASE,
-  port: parseInt(process.env.DB_PORT) || 1433,  // Define porta padrão caso não esteja no .env
+  port: parseInt(process.env.DB_PORT || '1433'),
   options: {
-    encrypt: true,
-    trustServerCertificate: true  // Aceita certificado autoassinado
-  },
-  authentication: {
-    type: 'ntlm', // Autenticação do Windows
-    options: {
-      userName: '',  // Em branco usa conta atual do Windows
-      password: '',
-      domain: ''     // Em branco assume domínio atual
-    }
+    encrypt: false, // Desativa criptografia
+    trustServerCertificate: true // Evita erro com certificados locais
   }
 };
 
@@ -28,6 +22,6 @@ process.on('exit', () => {
 
 module.exports = {
   sql,
-  pool: poolConnect,
+  pool,
   poolConnect
 };
