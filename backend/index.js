@@ -1,67 +1,47 @@
-// backend/index.js - Backend com SQL Server
-
+require('dotenv').config();
 const express = require('express');
 const sql = require('mssql');
-const cors = require('cors');
-require('dotenv').config();
-
 const app = express();
-const PORT = 3000;
-
-app.use(cors());
 app.use(express.json());
 
-// Teste de conexão ao banco de dados
-app.get('/test', (req, res) => {
-    sql.connect(config)
-      .then(() => {
-        res.json({ message: 'Conexão com o banco de dados bem-sucedida!' });
-      })
-      .catch((err) => {
-        res.status(500).json({ message: 'Erro ao conectar ao banco de dados', error: err.message });
-      });
-  });
-  
-// Configuração do SQL Server com suporte a autenticação por usuário/senha ou Windows
 const config = {
-    server: process.env.DB_SERVER || 'localhost',
-    database: process.env.DB_DATABASE || 'pizzaria',
-    ...(process.env.DB_USER && process.env.DB_PASSWORD
-        ? {
-              user: process.env.DB_USER,
-              password: process.env.DB_PASSWORD
-          }
-        : {
-              options: {
-                  trustedConnection: true
-              }
-          }),
+    server: process.env.DB_SERVER,
+    database: process.env.DB_DATABASE,
     options: {
-        ...((process.env.DB_USER && process.env.DB_PASSWORD) ? {} : { trustedConnection: true }),
-        trustServerCertificate: true
+        encrypt: true,  // Habilitar criptografia
+        trustServerCertificate: true, // Desabilitar verificação de certificado SSL
+        integratedSecurity: true // Usar autenticação do Windows
     }
 };
+
+// Conectar com o banco uma vez e reutilizar a conexão
+let poolPromise = sql.connect(config);
 
 // LOGIN
 app.post('/login', async (req, res) => {
     const { cpf, nome } = req.body;
 
     try {
-        await sql.connect(config);
-
-        const result = await sql.query`SELECT * FROM usuarios WHERE cpf = ${cpf}`;
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('cpf', sql.VarChar(11), cpf)
+            .query('SELECT * FROM usuarios WHERE cpf = @cpf');
+        
         let usuario;
 
         if (result.recordset.length > 0) {
             usuario = result.recordset[0];
         } else {
-            const insert = await sql.query`INSERT INTO usuarios (cpf, nome) OUTPUT INSERTED.* VALUES (${cpf}, ${nome})`;
+            const insert = await pool.request()
+                .input('cpf', sql.VarChar(11), cpf)
+                .input('nome', sql.VarChar(50), nome)
+                .query('INSERT INTO usuarios (cpf, nome) OUTPUT INSERTED.* VALUES (@cpf, @nome)');
             usuario = insert.recordset[0];
         }
 
         res.status(200).json(usuario);
     } catch (err) {
-        console.error(err);
+        console.error('Erro ao fazer login:', err);
         res.status(500).json({ mensagem: 'Erro no login' });
     }
 });
@@ -69,11 +49,11 @@ app.post('/login', async (req, res) => {
 // PRODUTOS
 app.get('/produtos', async (req, res) => {
     try {
-        await sql.connect(config);
-        const result = await sql.query`SELECT * FROM produtos`;
+        const pool = await poolPromise;
+        const result = await pool.request().query('SELECT * FROM produtos');
         res.status(200).json(result.recordset);
     } catch (err) {
-        console.error(err);
+        console.error('Erro ao buscar produtos:', err);
         res.status(500).json({ mensagem: 'Erro ao buscar produtos' });
     }
 });
@@ -87,21 +67,33 @@ app.post('/pedidos', async (req, res) => {
     }
 
     try {
-        await sql.connect(config);
-        const pedido = await sql.query`INSERT INTO pedidos (usuario_id) OUTPUT INSERTED.id VALUES (${usuario_id})`;
+        const pool = await poolPromise;
+        
+        // Inserir o pedido
+        const pedido = await pool.request()
+            .input('usuario_id', sql.Int, usuario_id)
+            .query('INSERT INTO pedidos (usuario_id) OUTPUT INSERTED.id VALUES (@usuario_id)');
+        
         const pedidoId = pedido.recordset[0].id;
 
+        // Inserir os itens do pedido
         for (const item of itens) {
-            await sql.query`INSERT INTO pedido_itens (pedido_id, produto_id, quantidade) VALUES (${pedidoId}, ${item.produto_id}, ${item.quantidade})`;
+            await pool.request()
+                .input('pedido_id', sql.Int, pedidoId)
+                .input('produto_id', sql.Int, item.produto_id)
+                .input('quantidade', sql.Int, item.quantidade)
+                .query('INSERT INTO pedido_itens (pedido_id, produto_id, quantidade) VALUES (@pedido_id, @produto_id, @quantidade)');
         }
 
         res.status(201).json({ mensagem: 'Pedido criado com sucesso', pedidoId });
     } catch (err) {
-        console.error(err);
+        console.error('Erro ao criar pedido:', err);
         res.status(500).json({ mensagem: 'Erro ao criar pedido' });
     }
 });
 
+// Configuração do servidor
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
