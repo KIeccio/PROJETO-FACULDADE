@@ -8,11 +8,24 @@ const config = {
   database: process.env.DB_DATABASE,
   port: parseInt(process.env.DB_PORT || '1433'),
   options: {
-    encrypt: false, // Desativa criptografia
+    encrypt: true, // Desativa criptografia
     trustServerCertificate: true // Evita erro com certificados locais
   }
 };
 
+sql.connect(config)
+    .then(pool => {
+        // A conexão foi bem-sucedida, você pode executar consultas agora
+        console.log('Conexão com o banco de dados bem-sucedida!');
+        return pool.request().query('SELECT * FROM produtos');
+    })
+    .then(result => {
+        console.log(result);
+    })
+    .catch(err => {
+        console.error('Erro ao conectar com o banco de dados:', err);
+    });
+    
 const pool = new sql.ConnectionPool(config);
 const poolConnect = pool.connect();
 

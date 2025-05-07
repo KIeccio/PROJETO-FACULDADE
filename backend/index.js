@@ -11,6 +11,9 @@ app.get('/', (req, res) => {
   res.send('API da pizzaria funcionando!');
 });
 
+const cors = require('cors');
+app.use(cors());
+
 
 // LOGIN
 app.post('/login', async (req, res) => {
