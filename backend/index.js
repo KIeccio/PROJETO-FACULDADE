@@ -4,21 +4,24 @@ const sql = require('mssql');
 const app = express();
 app.use(express.json());
 
+// Configuração de conexão com o banco de dados usando autenticação do Windows
 const config = {
   server: process.env.DB_SERVER,
   database: process.env.DB_DATABASE,
-  port: parseInt(process.env.DB_PORT),
   options: {
-    encrypt: true, // Habilitar criptografia
-    trustServerCertificate: true, // Desabilitar verificação de certificado SSL
-    integratedSecurity: true // Usar autenticação do Windows
+    encrypt: false,  // Desabilitar criptografia se não necessário
+    trustServerCertificate: true // Desabilitar verificação de certificado SSL
+  },
+  // Usando autenticação do Windows
+  options: {
+    trustedConnection: true,  // Autenticação do Windows
   }
 };
 
-// Conectar com o banco uma vez e reutilizar a conexão
+// Conectar ao banco de dados uma vez e reutilizar a conexão
 let poolPromise = sql.connect(config);
 
-// LOGIN
+// Rota de login
 app.post('/login', async (req, res) => {
   const { cpf, nome } = req.body;
 
@@ -40,15 +43,14 @@ app.post('/login', async (req, res) => {
       usuario = insert.recordset[0];
     }
 
-    // Retorna apenas o id e nome, para não expor dados desnecessários
-    res.status(200).json({ id: usuario.id, nome: usuario.nome });
+    res.status(200).json(usuario);
   } catch (err) {
     console.error('Erro ao fazer login:', err);
-    res.status(500).json({ mensagem: 'Erro no login. Tente novamente mais tarde.' });
+    res.status(500).json({ mensagem: 'Erro no login' });
   }
 });
 
-// PRODUTOS
+// Rota de produtos
 app.get('/produtos', async (req, res) => {
   try {
     const pool = await poolPromise;
@@ -56,11 +58,11 @@ app.get('/produtos', async (req, res) => {
     res.status(200).json(result.recordset);
   } catch (err) {
     console.error('Erro ao buscar produtos:', err);
-    res.status(500).json({ mensagem: 'Erro ao buscar produtos. Tente novamente mais tarde.' });
+    res.status(500).json({ mensagem: 'Erro ao buscar produtos' });
   }
 });
 
-// CRIAR PEDIDO
+// Rota para criar pedido
 app.post('/pedidos', async (req, res) => {
   const { usuario_id, itens } = req.body;
 
@@ -90,7 +92,7 @@ app.post('/pedidos', async (req, res) => {
     res.status(201).json({ mensagem: 'Pedido criado com sucesso', pedidoId });
   } catch (err) {
     console.error('Erro ao criar pedido:', err);
-    res.status(500).json({ mensagem: 'Erro ao criar pedido. Tente novamente mais tarde.' });
+    res.status(500).json({ mensagem: 'Erro ao criar pedido' });
   }
 });
 

@@ -4,29 +4,17 @@ require('dotenv').config();
 const config = {
   server: process.env.DB_SERVER,
   database: process.env.DB_DATABASE,
-  port: parseInt(process.env.DB_PORT),
   options: {
     encrypt: false,  // Desabilitar criptografia se não necessário
-    trustServerCertificate: true
+    trustServerCertificate: true // Desabilitar verificação de certificado SSL
+  },
+  // Usando autenticação do Windows
+  options: {
+    trustedConnection: true,  // Autenticação do Windows
   }
 };
 
-// Se estiver usando autenticação do Windows
-if (process.env.DB_TRUSTED_CONNECTION === 'true') {
-  config.options.trustedConnection = true;
-  config.authentication = {
-    type: 'ntlm',
-    options: {
-      domain: '',  // Pode deixar vazio se for máquina local
-      userName: '', // Não precisa passar se for sua conta do Windows
-      password: ''  // Idem
-    }
-  };
-} else {
-  config.user = process.env.DB_USER;
-  config.password = process.env.DB_PASSWORD;
-}
-
+// Criar a conexão com o banco de dados
 const pool = new sql.ConnectionPool(config);
 const poolConnect = pool.connect();
 
