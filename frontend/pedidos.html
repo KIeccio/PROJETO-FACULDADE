@@ -72,9 +72,9 @@
             produtos.forEach(p => {
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <div class="sabor_pizza" style="background-image: url('http://localhost:3000/imagens/${p.imagem}');"></div>
+                    <div class="sabor_pizza" style="background-image: url('http://localhost:3000${p.imagem}');"></div>
                     <div class="nome_sabor" onclick="adicionarAoPedido(${p.id})">${p.nome}</div>
-                `;
+                    `;
                 categorias[p.categoria_id].appendChild(li);
             });
         });
