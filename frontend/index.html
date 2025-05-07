@@ -6,23 +6,17 @@
     <link rel="stylesheet" href="style.css">
     <link id="favicon" rel="shortcut icon" href="/frontend/Imagens/pizzaIcon.png">
     <title>Login</title>
-    
 </head>
 <body>
     <div class="painel white">
         <div class="pizza-hot"></div>
         <div class="login">
-            <!-- <form action="#" method="post">
-                <input class="campoCpf" type="tel" name="CPF" placeholder="CPF" maxlength="11"><br>
-                <input class="campoNome" type="tel" name="NOME" placeholder="NOME" maxlength="20"><br>
-                <input class="entrar" type="submit" value="ENTRAR" >
-            </form> -->
             <input class="campoCpf" type="tel" id="cpf" placeholder="CPF" maxlength="11"><br>
             <input class="campoNome" type="text" id="nome" placeholder="NOME" maxlength="20"><br>
             <button class="entrar" onclick="fazerLogin()">ENTRAR</button>
-            
         </div>
-    </div><div class="painel red">
+    </div>
+    <div class="painel red">
         <div class="pizza"></div>
         <div class="board">
             <div class="realize-seu-pedido">REALIZE SEU PEDIDO</div>
@@ -32,28 +26,32 @@
         async function fazerLogin() {
             const cpf = document.getElementById('cpf').value;
             const nome = document.getElementById('nome').value;
-        
+
             if (!cpf || !nome) {
                 alert('Preencha CPF e Nome.');
                 return;
             }
-        
-            const resposta = await fetch('http://localhost:3000/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cpf, nome })
-            });
-        
-            const dados = await resposta.json();
-        
-            if (resposta.ok) {
-                localStorage.setItem('usuarioId', dados.id);
-                localStorage.setItem('usuarioNome', dados.nome);
-                window.location.href = 'pedidos.html';
-            } else {
-                alert(dados.mensagem || 'Erro ao fazer login.');
+
+            try {
+                const resposta = await fetch('http://localhost:3000/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cpf, nome })
+                });
+
+                const dados = await resposta.json();
+
+                if (resposta.ok) {
+                    localStorage.setItem('usuarioId', dados.id);
+                    localStorage.setItem('usuarioNome', dados.nome);
+                    window.location.href = 'pedidos.html';
+                } else {
+                    alert(dados.mensagem || 'Erro ao fazer login.');
+                }
+            } catch (error) {
+                alert('Erro na comunicação com o servidor. Tente novamente mais tarde.');
             }
         }
-        </script>
+    </script>
 </body>
 </html>

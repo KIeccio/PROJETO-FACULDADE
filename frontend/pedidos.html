@@ -16,51 +16,38 @@
         <div class="click_menu container_menu pizzas"><div class="tipo_menu"><a href="#pizzas_menu">PIZZAS</a></div></div>
         <div class="click_menu container_menu esfihas"><div class="tipo_menu"><a href="#esfihas_menu">ESFIHAS</a></div></div>
         <div class="click_menu container_menu refrigerantes"><div class="tipo_menu"><a href="#refrigerantes_menu">REFRIGERANTES</a></div></div>
-    </div><div class="container">
+    </div>
+    <div class="container">
+        <!-- Menu de Pizzas -->
         <div class="square pizzas_menu" id="pizzas_menu">
             <div class="seta_pizza"></div>
             <p>PIZZAS</p>
             <div class="itens">
-                <ul>
-                    <li><div class="sabor_pizza" style="background-image: url(/frontend/Imagens/Pizzas/Calabresa.png);"></div><div class="nome_sabor">CALABRESA</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/frontend/Imagens/Pizzas/Brocolis\ Com\ Bacon.png);"></div><div class="nome_sabor">BROCOLIS C/BACON</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/frontend/Imagens/Pizzas/4\ Queijos.png);"></div><div class="nome_sabor">QUATRO QUEIJOS</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/frontend/Imagens/Pizzas/Frango\ Com\ Catupiry.jpeg);"></div><div class="nome_sabor">FRANGO C/CATUPIRY</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/frontend/Imagens/Pizzas/Portuguesa.png);"></div><div class="nome_sabor">PORTUGUESA</div>
-                </ul>
+                <ul id="lista-pizzas"></ul>
             </div>
         </div>
+
+        <!-- Menu de Esfihas -->
         <div class="square esfihas_menu" id="esfihas_menu">
             <div class="seta_pizza"></div>
             <p>ESFIHAS</p>
             <div class="itens">
-                <ul>
-                    <li><div class="sabor_pizza" style="background-image: url(/frontend/Imagens/Esfihas/Carne.png);"></div><div class="nome_sabor">CARNE</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/frontend/Imagens/Esfihas/QUEIJO.jpeg);"></div><div class="nome_sabor">QUEIJO</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/frontend/Imagens/Esfihas/Calabresa.png);"></div><div class="nome_sabor">CALABRESA</div>
-                </ul>
+                <ul id="lista-esfihas"></ul>
             </div>
-
         </div>
+
+        <!-- Menu de Refrigerantes -->
         <div class="square refrigerantes_menu" id="refrigerantes_menu">
             <div class="seta_pizza"></div>
             <P>REFRIGERANTES</P>
             <div class="itens">
-                <ul>
-                    <li><div class="sabor_pizza" style="background-image: url(/frontend/Imagens/Refrigerantes/COCA.png);"></div><div class="nome_sabor">COCA COLA</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/frontend/Imagens/Refrigerantes/FANTA.jpg);"></div><div class="nome_sabor">FANTA</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/frontend/Imagens/Refrigerantes/GUARANA.png);"></div><div class="nome_sabor">GUARANA</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/frontend/Imagens/Refrigerantes/PEPSI.jpeg);"></div><div class="nome_sabor">PEPSI</div>
-
-                </ul>
+                <ul id="lista-refrigerantes"></ul>
             </div>
-
         </div>
-
-
-    </div><div class="footer">
-
     </div>
+
+    <div class="footer"></div>
+
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const nome = localStorage.getItem('usuarioNome');
@@ -103,8 +90,16 @@
             }
             alert('Produto adicionado ao pedido!');
         }
-        
+
         async function enviarPedido() {
+            if (pedido.length === 0) {
+                alert('Seu pedido está vazio. Adicione produtos.');
+                return;
+            }
+            
+            const confirmar = confirm('Você tem certeza que deseja enviar o pedido?');
+            if (!confirmar) return;
+            
             const usuario_id = localStorage.getItem('usuarioId');
             const resposta = await fetch('http://localhost:3000/pedidos', {
                 method: 'POST',
