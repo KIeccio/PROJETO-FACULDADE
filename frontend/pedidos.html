@@ -2,64 +2,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link id="favicon" rel="shortcut icon" href="/Imagens/pizzaIcon.png">
+    <link id="favicon" rel="shortcut icon" href="/frontend/Imagens/pizzaIcon.png">
     <link rel="stylesheet" href="style2.css">
     <title>Document</title>
 </head>
 <body>
     <div class="cabecalho">
         <div class="pizzahot"></div>
-        <div class="hello">Hello, User!</div>
+        <div class="hello">Hello, <span id="nomeUsuario">User</span>!</div>
         <div class="car">Pedido</div>
     </div>
     <div class="menu">
         <div class="click_menu container_menu pizzas"><div class="tipo_menu"><a href="#pizzas_menu">PIZZAS</a></div></div>
         <div class="click_menu container_menu esfihas"><div class="tipo_menu"><a href="#esfihas_menu">ESFIHAS</a></div></div>
         <div class="click_menu container_menu refrigerantes"><div class="tipo_menu"><a href="#refrigerantes_menu">REFRIGERANTES</a></div></div>
-    </div><div class="container">
+    </div>
+    <div class="container">
+        <!-- Menu de Pizzas -->
         <div class="square pizzas_menu" id="pizzas_menu">
             <div class="seta_pizza"></div>
             <p>PIZZAS</p>
             <div class="itens">
-                <ul>
-                    <li><div class="sabor_pizza" style="background-image: url(/Imagens/Pizzas/Calabresa.png);"></div><div class="nome_sabor">CALABRESA</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/Imagens/Pizzas/Brocolis\ Com\ Bacon.png);"></div><div class="nome_sabor">BROCOLIS C/BACON</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/Imagens/Pizzas/4\ Queijos.png);"></div><div class="nome_sabor">QUATRO QUEIJOS</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/Imagens/Pizzas/Frango\ Com\ Catupiry.jpeg);"></div><div class="nome_sabor">FRANGO C/CATUPIRY</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/Imagens/Pizzas/Portuguesa.png);"></div><div class="nome_sabor">PORTUGUESA</div>
-                </ul>
+                <ul id="lista-pizzas"></ul>
             </div>
         </div>
+
+        <!-- Menu de Esfihas -->
         <div class="square esfihas_menu" id="esfihas_menu">
             <div class="seta_pizza"></div>
             <p>ESFIHAS</p>
             <div class="itens">
-                <ul>
-                    <li><div class="sabor_pizza" style="background-image: url(/Imagens/Esfihas/Carne.png);"></div><div class="nome_sabor">CARNE</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/Imagens/Esfihas/QUEIJO.jpeg);"></div><div class="nome_sabor">QUEIJO</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/Imagens/Esfihas/Calabresa.png);"></div><div class="nome_sabor">CALABRESA</div>
-                </ul>
+                <ul id="lista-esfihas"></ul>
             </div>
-
         </div>
+
+        <!-- Menu de Refrigerantes -->
         <div class="square refrigerantes_menu" id="refrigerantes_menu">
             <div class="seta_pizza"></div>
             <P>REFRIGERANTES</P>
             <div class="itens">
-                <ul>
-                    <li><div class="sabor_pizza" style="background-image: url(/Imagens/Refrigerantes/COCA.png);"></div><div class="nome_sabor">COCA COLA</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/Imagens/Refrigerantes/FANTA.jpg);"></div><div class="nome_sabor">FANTA</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/Imagens/Refrigerantes/GUARANA.png);"></div><div class="nome_sabor">GUARANA</div>
-                    <li><div class="sabor_pizza" style="background-image: url(/Imagens/Refrigerantes/PEPSI.jpeg);"></div><div class="nome_sabor">PEPSI</div>
-
-                </ul>
+                <ul id="lista-refrigerantes"></ul>
             </div>
-
         </div>
-
-
-    </div><div class="footer">
-
     </div>
+
+    <div class="footer"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const nome = localStorage.getItem('usuarioNome');
+            const id = localStorage.getItem('usuarioId');
+        
+            if (!id || !nome) {
+                window.location.href = 'index.html';
+                return;
+            }
+        
+            document.getElementById('nomeUsuario').textContent = nome;
+        
+            const resposta = await fetch('http://localhost:3000/produtos');
+            const produtos = await resposta.json();
+        
+            const categorias = {
+                1: document.querySelector('#pizzas_menu ul'),
+                2: document.querySelector('#esfihas_menu ul'),
+                3: document.querySelector('#refrigerantes_menu ul'),
+            };
+        
+            produtos.forEach(p => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div class="sabor_pizza" style="background-image: url('http://localhost:3000/imagens/${p.imagem}');"></div>
+                    <div class="nome_sabor" onclick="adicionarAoPedido(${p.id})">${p.nome}</div>
+                `;
+                categorias[p.categoria_id].appendChild(li);
+            });
+        });
+        
+        const pedido = [];
+        
+        function adicionarAoPedido(produtoId) {
+            const existente = pedido.find(p => p.produto_id === produtoId);
+            if (existente) {
+                existente.quantidade++;
+            } else {
+                pedido.push({ produto_id: produtoId, quantidade: 1 });
+            }
+            alert('Produto adicionado ao pedido!');
+        }
+
+        async function enviarPedido() {
+            if (pedido.length === 0) {
+                alert('Seu pedido está vazio. Adicione produtos.');
+                return;
+            }
+            
+            const confirmar = confirm('Você tem certeza que deseja enviar o pedido?');
+            if (!confirmar) return;
+            
+            const usuario_id = localStorage.getItem('usuarioId');
+            const resposta = await fetch('http://localhost:3000/pedidos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuario_id, itens: pedido })
+            });
+        
+            const dados = await resposta.json();
+            if (resposta.ok) {
+                alert('Pedido enviado com sucesso!');
+                pedido.length = 0; // esvaziar
+            } else {
+                alert('Erro ao enviar pedido.');
+            }
+        }
+    </script>
 </body>
 </html>

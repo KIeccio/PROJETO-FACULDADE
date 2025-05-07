@@ -21,7 +21,7 @@ body{
 }
 
 .pizza{
-    background-image: url(/Imagens/pizza.png);
+    background-image: url(/frontend/Imagens/pizza.png);
     background-size: cover;
     background-repeat: no-repeat;
     width: 600px;
@@ -52,7 +52,7 @@ body{
 }
 
 .pizza-hot{
-    background-image: url(/Imagens/pizzahot.png);
+    background-image: url(/frontend/Imagens/pizzahot.png);
     background-repeat: no-repeat;
     background-size: contain;
     width: 500px;
@@ -83,7 +83,7 @@ body{
     text-align: center;
 
     appearance: none;
-    background-image: url(/Imagens/perfil.png);
+    background-image: url(/frontend/Imagens/perfil.png);
     background-size: contain;
     background-size: 1em;
     background-repeat: no-repeat;
