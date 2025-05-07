@@ -6,7 +6,7 @@ const config = {
   database: process.env.DB_DATABASE,
   port: parseInt(process.env.DB_PORT),
   options: {
-    encrypt: false,
+    encrypt: false,  // Desabilitar criptografia se não necessário
     trustServerCertificate: true
   }
 };
@@ -17,9 +17,9 @@ if (process.env.DB_TRUSTED_CONNECTION === 'true') {
   config.authentication = {
     type: 'ntlm',
     options: {
-      domain: '', // pode deixar vazio se for máquina local
-      userName: '', // não precisa passar se for sua conta do Windows
-      password: ''  // idem
+      domain: '',  // Pode deixar vazio se for máquina local
+      userName: '', // Não precisa passar se for sua conta do Windows
+      password: ''  // Idem
     }
   };
 } else {
@@ -30,8 +30,13 @@ if (process.env.DB_TRUSTED_CONNECTION === 'true') {
 const pool = new sql.ConnectionPool(config);
 const poolConnect = pool.connect();
 
+// Fechar o pool quando o processo terminar
+process.on('exit', () => {
+  sql.close();
+});
+
 module.exports = {
   sql,
-  pool,
+  pool: poolConnect,  // Usando o pool de conexão
   poolConnect
 };

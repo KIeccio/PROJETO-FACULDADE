@@ -5,13 +5,14 @@ const app = express();
 app.use(express.json());
 
 const config = {
-    server: process.env.DB_SERVER,
-    database: process.env.DB_DATABASE,
-    options: {
-        encrypt: true,  // Habilitar criptografia
-        trustServerCertificate: true, // Desabilitar verificação de certificado SSL
-        integratedSecurity: true // Usar autenticação do Windows
-    }
+  server: process.env.DB_SERVER,
+  database: process.env.DB_DATABASE,
+  port: parseInt(process.env.DB_PORT),
+  options: {
+    encrypt: true, // Habilitar criptografia
+    trustServerCertificate: true, // Desabilitar verificação de certificado SSL
+    integratedSecurity: true // Usar autenticação do Windows
+  }
 };
 
 // Conectar com o banco uma vez e reutilizar a conexão
@@ -19,81 +20,82 @@ let poolPromise = sql.connect(config);
 
 // LOGIN
 app.post('/login', async (req, res) => {
-    const { cpf, nome } = req.body;
+  const { cpf, nome } = req.body;
 
-    try {
-        const pool = await poolPromise;
-        const result = await pool.request()
-            .input('cpf', sql.VarChar(11), cpf)
-            .query('SELECT * FROM usuarios WHERE cpf = @cpf');
-        
-        let usuario;
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input('cpf', sql.VarChar(11), cpf)
+      .query('SELECT * FROM usuarios WHERE cpf = @cpf');
+    
+    let usuario;
 
-        if (result.recordset.length > 0) {
-            usuario = result.recordset[0];
-        } else {
-            const insert = await pool.request()
-                .input('cpf', sql.VarChar(11), cpf)
-                .input('nome', sql.VarChar(50), nome)
-                .query('INSERT INTO usuarios (cpf, nome) OUTPUT INSERTED.* VALUES (@cpf, @nome)');
-            usuario = insert.recordset[0];
-        }
-
-        res.status(200).json(usuario);
-    } catch (err) {
-        console.error('Erro ao fazer login:', err);
-        res.status(500).json({ mensagem: 'Erro no login' });
+    if (result.recordset.length > 0) {
+      usuario = result.recordset[0];
+    } else {
+      const insert = await pool.request()
+        .input('cpf', sql.VarChar(11), cpf)
+        .input('nome', sql.VarChar(50), nome)
+        .query('INSERT INTO usuarios (cpf, nome) OUTPUT INSERTED.* VALUES (@cpf, @nome)');
+      usuario = insert.recordset[0];
     }
+
+    // Retorna apenas o id e nome, para não expor dados desnecessários
+    res.status(200).json({ id: usuario.id, nome: usuario.nome });
+  } catch (err) {
+    console.error('Erro ao fazer login:', err);
+    res.status(500).json({ mensagem: 'Erro no login. Tente novamente mais tarde.' });
+  }
 });
 
 // PRODUTOS
 app.get('/produtos', async (req, res) => {
-    try {
-        const pool = await poolPromise;
-        const result = await pool.request().query('SELECT * FROM produtos');
-        res.status(200).json(result.recordset);
-    } catch (err) {
-        console.error('Erro ao buscar produtos:', err);
-        res.status(500).json({ mensagem: 'Erro ao buscar produtos' });
-    }
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().query('SELECT * FROM produtos');
+    res.status(200).json(result.recordset);
+  } catch (err) {
+    console.error('Erro ao buscar produtos:', err);
+    res.status(500).json({ mensagem: 'Erro ao buscar produtos. Tente novamente mais tarde.' });
+  }
 });
 
 // CRIAR PEDIDO
 app.post('/pedidos', async (req, res) => {
-    const { usuario_id, itens } = req.body;
+  const { usuario_id, itens } = req.body;
 
-    if (!usuario_id || !Array.isArray(itens) || itens.length === 0) {
-        return res.status(400).json({ mensagem: 'Dados inválidos' });
+  if (!usuario_id || !Array.isArray(itens) || itens.length === 0) {
+    return res.status(400).json({ mensagem: 'Dados inválidos' });
+  }
+
+  try {
+    const pool = await poolPromise;
+
+    // Inserir o pedido
+    const pedido = await pool.request()
+      .input('usuario_id', sql.Int, usuario_id)
+      .query('INSERT INTO pedidos (usuario_id) OUTPUT INSERTED.id VALUES (@usuario_id)');
+    
+    const pedidoId = pedido.recordset[0].id;
+
+    // Inserir os itens do pedido
+    for (const item of itens) {
+      await pool.request()
+        .input('pedido_id', sql.Int, pedidoId)
+        .input('produto_id', sql.Int, item.produto_id)
+        .input('quantidade', sql.Int, item.quantidade)
+        .query('INSERT INTO pedido_itens (pedido_id, produto_id, quantidade) VALUES (@pedido_id, @produto_id, @quantidade)');
     }
 
-    try {
-        const pool = await poolPromise;
-        
-        // Inserir o pedido
-        const pedido = await pool.request()
-            .input('usuario_id', sql.Int, usuario_id)
-            .query('INSERT INTO pedidos (usuario_id) OUTPUT INSERTED.id VALUES (@usuario_id)');
-        
-        const pedidoId = pedido.recordset[0].id;
-
-        // Inserir os itens do pedido
-        for (const item of itens) {
-            await pool.request()
-                .input('pedido_id', sql.Int, pedidoId)
-                .input('produto_id', sql.Int, item.produto_id)
-                .input('quantidade', sql.Int, item.quantidade)
-                .query('INSERT INTO pedido_itens (pedido_id, produto_id, quantidade) VALUES (@pedido_id, @produto_id, @quantidade)');
-        }
-
-        res.status(201).json({ mensagem: 'Pedido criado com sucesso', pedidoId });
-    } catch (err) {
-        console.error('Erro ao criar pedido:', err);
-        res.status(500).json({ mensagem: 'Erro ao criar pedido' });
-    }
+    res.status(201).json({ mensagem: 'Pedido criado com sucesso', pedidoId });
+  } catch (err) {
+    console.error('Erro ao criar pedido:', err);
+    res.status(500).json({ mensagem: 'Erro ao criar pedido. Tente novamente mais tarde.' });
+  }
 });
 
 // Configuração do servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
