@@ -1,5 +1,12 @@
-CREATE DATABASE pizzaria;
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'pizzaria')
+BEGIN
+    CREATE DATABASE pizzaria;
+END
+GO
+
+-- 2. Agora usa o banco de dados
 USE pizzaria;
+GO
 
 -- Tabela de usuários
 CREATE TABLE usuarios (
