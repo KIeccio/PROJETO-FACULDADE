@@ -3,6 +3,11 @@ const mssql = require('mssql');
 const express = require('express');
 const { sql, poolConnect } = require('./db');
 
+const path = require('path');
+
+// Adicione isso antes das rotas
+app.use('/imagens', express.static(path.join(__dirname, 'Imagens')));
+
 const config = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
