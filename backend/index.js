@@ -2,11 +2,11 @@ require('dotenv').config();
 const mssql = require('mssql');
 const express = require('express');
 const { sql, poolConnect } = require('./db');
+const app = express();
+const cors = require('cors');
+const PORT = process.env.PORT || 3000;
 
 const path = require('path');
-
-// Adicione isso antes das rotas
-app.use('/imagens', express.static(path.join(__dirname, 'Imagens')));
 
 const config = {
   user: process.env.DB_USER,
@@ -20,17 +20,15 @@ const config = {
   }
 };
 
-const app = express();
+app.use(cors());
+
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
+app.use('/imagens', express.static(path.join(__dirname, 'Imagens')));
 
 app.get('/', (req, res) => {
   res.send('API da pizzaria funcionando!');
 });
-
-const cors = require('cors');
-app.use(cors());
 
 // LOGIN
 app.post('/login', async (req, res) => {

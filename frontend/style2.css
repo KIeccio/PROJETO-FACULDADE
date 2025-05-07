@@ -28,7 +28,7 @@ a:visited{
 }
 
 .pizzahot{
-    background-image: url(/frontend/Imagens/pizzahot.png);
+    background-image: url(http://localhost:3000/Imagens/pizzahot.png);
     background-repeat: no-repeat;
     background-size: contain;
     height: 70px;
@@ -44,7 +44,7 @@ a:visited{
 .hello{
     width: 160px;
     height: 25px;
-    background-image: url(/frontend/Imagens/perfil2white.png);
+    background-image: url(http://localhost:3000/Imagens/perfil2white.png);
     background-repeat: no-repeat;
     background-size: contain;
 
@@ -68,7 +68,7 @@ a:visited{
 .car{
     width: 120px;
     height: 25px;
-    background-image: url(/frontend/Imagens/car.png);
+    background-image: url(http://localhost:3000/Imagens/car.png);
     background-repeat: no-repeat;
     background-size: contain;
 
@@ -164,7 +164,7 @@ a:visited{
 }
 
 .seta_pizza{
-    background-image: url(/frontend/Imagens/setaPizza.png);
+    background-image: url(http://localhost:3000/Imagens/setaPizza.png);
     background-repeat: no-repeat;
     background-size: contain;
     width: 28px;
