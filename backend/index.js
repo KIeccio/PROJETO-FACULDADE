@@ -11,6 +11,17 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
+// Teste de conexão ao banco de dados
+app.get('/test', (req, res) => {
+    sql.connect(config)
+      .then(() => {
+        res.json({ message: 'Conexão com o banco de dados bem-sucedida!' });
+      })
+      .catch((err) => {
+        res.status(500).json({ message: 'Erro ao conectar ao banco de dados', error: err.message });
+      });
+  });
+  
 // Configuração do SQL Server com suporte a autenticação por usuário/senha ou Windows
 const config = {
     server: process.env.DB_SERVER || 'localhost',
