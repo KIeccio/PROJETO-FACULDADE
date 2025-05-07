@@ -11,12 +11,22 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
-// Configuração do SQL Server
+// Configuração do SQL Server com suporte a autenticação por usuário/senha ou Windows
 const config = {
-    server: 'localhost',
-    database: 'pizzaria',
+    server: process.env.DB_SERVER || 'localhost',
+    database: process.env.DB_DATABASE || 'pizzaria',
+    ...(process.env.DB_USER && process.env.DB_PASSWORD
+        ? {
+              user: process.env.DB_USER,
+              password: process.env.DB_PASSWORD
+          }
+        : {
+              options: {
+                  trustedConnection: true
+              }
+          }),
     options: {
-        trustedConnection: true,
+        ...((process.env.DB_USER && process.env.DB_PASSWORD) ? {} : { trustedConnection: true }),
         trustServerCertificate: true
     }
 };
