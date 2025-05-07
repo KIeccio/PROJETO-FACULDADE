@@ -44,6 +44,25 @@ a:visited{
 .hello{
     width: 160px;
     height: 25px;
+    background-repeat: no-repeat;
+    background-size: contain;
+
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bolder;
+    font-size: 1.2em;
+    text-align: right;
+
+    position: absolute;
+    top: 20%;
+    left: 3%;
+
+    
+}
+
+.user{
+    width: 160px;
+    height: 25px;
     background-image: url(http://localhost:3000/Imagens/perfil2white.png);
     background-repeat: no-repeat;
     background-size: contain;
